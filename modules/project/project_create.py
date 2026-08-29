@@ -1,10 +1,10 @@
 from importlib.resources import files
 from pathlib import Path
-from typing import Final
 
 from num2words import num2words
 
 from modules.enums.project_type import ProjectType
+from modules.project.base_project import BaseProject
 from modules.project.models.project import Project
 from naming.slugifier import Slugifier
 from validators.modules.validate_project_type_parts import ValidateProjectTypeParts
@@ -14,15 +14,7 @@ from validators.validate_not_empty import ValidateNotEmpty
 from validators.validate_not_negative import ValidateNotNegative
 
 
-class ProjectCreate:
-
-    FILE_KEEP: Final[str] = ".gitkeep"
-    FILE_RESUME: Final[str] = "resumo.md"
-
-    FOLDER_META: Final[str] = "meta"
-    FOLDER_PARTED: Final[str] = "parte_"
-    FOLDER_CHAPTERED: Final[str] = "capitulos"
-    FOLDER_STANDALONE: Final[str] = "texto"
+class ProjectCreate(BaseProject):
 
     def execute(
         self,
@@ -33,7 +25,7 @@ class ProjectCreate:
     ) -> None:
         project = Project.empty()
         self.__handle_root(project=project, root=root)
-        self.__handle_title_and_slug(project=project, title=title)
+        self.__handle_title_and_project_root(project=project, title=title)
         self.__handle_type_and_parts(
             project=project, project_type=project_type, parts=parts
         )
@@ -51,7 +43,7 @@ class ProjectCreate:
         project.root = ValidateExists.validate(root)
 
     @staticmethod
-    def __handle_title_and_slug(project: Project, title: str) -> None:
+    def __handle_title_and_project_root(project: Project, title: str) -> None:
         title = ValidateNotEmpty.validate(title, "The project title cannot be empty!")
 
         slug = Slugifier.slugify(title)
@@ -81,7 +73,7 @@ class ProjectCreate:
 
     def __create_meta(self, project: Project) -> None:
         folder = project.root / self.FOLDER_META
-        self.__create_folder(folder)
+        self._create_folder(folder)
 
         if project.project_type == ProjectType.STANDALONE:
             return
@@ -91,14 +83,14 @@ class ProjectCreate:
         template = files("modules.templates").joinpath("resume.md_")
         content = template.read_text(encoding="utf-8")
 
-        self.__create_file(file_resume, content)
+        self._create_file(file_resume, content)
 
     def __create_standalone(self, project: Project) -> None:
         if project.project_type != ProjectType.STANDALONE:
             return
 
         folder = project.root / self.FOLDER_STANDALONE
-        self.__create_folder(folder, keep=False)
+        self._create_folder(folder, keep=False)
 
         slug = Slugifier.slugify(project.title)
 
@@ -109,14 +101,14 @@ class ProjectCreate:
         content = template.read_text(encoding="utf-8")
         content = content.replace("«title»", project.title)
 
-        self.__create_file(file, content)
+        self._create_file(file, content)
 
     def __create_chaptered(self, project: Project) -> None:
         if project.project_type != ProjectType.CHAPTERED:
             return
 
         folder = project.root / self.FOLDER_CHAPTERED
-        self.__create_folder(folder)
+        self._create_folder(folder)
 
     def __create_parted(self, project: Project) -> None:
         if project.project_type != ProjectType.PARTED:
@@ -127,7 +119,7 @@ class ProjectCreate:
         for part in range(1, project.parts + 1):
             folder = project.root / f"{self.FOLDER_PARTED}{part:0{width}d}"
 
-            self.__create_folder(folder, keep=False)
+            self._create_folder(folder, keep=False)
 
             template = files("modules.templates").joinpath("part.md_")
             content = template.read_text(encoding="utf-8")
@@ -140,30 +132,4 @@ class ProjectCreate:
 
             file = folder / filename
 
-            self.__create_file(file, content)
-
-    @staticmethod
-    def __create_folder(
-        folder: Path,
-        keep: bool = True,
-    ) -> None:
-        folder.mkdir(parents=False, exist_ok=False)
-        ValidateExists.validate(folder)
-
-        if not keep:
-            return
-
-        file_keep = folder / ProjectCreate.FILE_KEEP
-        file_keep.touch()
-        ValidateExists.validate(file_keep)
-
-    @staticmethod
-    def __create_file(
-        file: Path,
-        content: str | None = None,
-    ) -> None:
-        file.touch()
-        ValidateExists.validate(file)
-
-        if content is not None:
-            file.write_text(content, encoding="utf-8")
+            self._create_file(file, content)
