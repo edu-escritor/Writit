@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from modules.enums.locales import Locales
 from modules.enums.project_type import ProjectType
 from modules.project.models.project import Project
 from modules.project.project_create import ProjectCreate
@@ -14,7 +15,7 @@ class TestProjectCreate:
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp) / "does_not_exist"
 
-            service = ProjectCreate()
+            service = ProjectCreate(Locales.PORTUGUESE_EUROPEAN)
 
             with pytest.raises(Exception):
                 service.execute(
@@ -27,7 +28,7 @@ class TestProjectCreate:
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp)
 
-            service = ProjectCreate()
+            service = ProjectCreate(Locales.PORTUGUESE_EUROPEAN)
 
             service.execute(
                 root=root,
@@ -46,7 +47,7 @@ class TestProjectCreate:
             project = root / "meu-romance"
             project.mkdir()
 
-            service = ProjectCreate()
+            service = ProjectCreate(Locales.PORTUGUESE_EUROPEAN)
 
             with pytest.raises(ValueError, match="The project folder already exists"):
                 service.execute(
@@ -59,7 +60,7 @@ class TestProjectCreate:
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp)
 
-            service = ProjectCreate()
+            service = ProjectCreate(Locales.PORTUGUESE_EUROPEAN)
 
             service.execute(
                 root=root,

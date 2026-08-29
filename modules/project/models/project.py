@@ -5,6 +5,7 @@ from datetime import date
 from pathlib import Path
 from typing import ClassVar, Self
 
+from modules.enums.locales import Locales
 from modules.enums.project_type import ProjectType
 from validators.path.validate_is_file import ValidateIsFile
 
@@ -17,6 +18,7 @@ class Project:
     root: Path
     project_type: ProjectType
     parts: int
+    locale: Locales = Locales.PORTUGUESE_EUROPEAN
     created_at: date = field(default_factory=date.today)
 
     def save(self) -> None:
@@ -25,6 +27,7 @@ class Project:
             "root": str(self.root),
             "project_type": self.project_type.value,
             "parts": self.parts,
+            "locale": self.locale.value,
             "created_at": self.created_at.isoformat(),
         }
 
@@ -48,6 +51,7 @@ class Project:
             root=root,
             project_type=ProjectType(data["project_type"]),
             parts=data["parts"],
+            locale=Locales(data["locale"]),
             created_at=date.fromisoformat(data["created_at"]),
         )
 

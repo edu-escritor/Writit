@@ -2,18 +2,24 @@ from abc import ABC
 from pathlib import Path
 from typing import Final
 
+from modules.enums.locales import Locales
+from translations.translation_factory import TranslationFactory
 from validators.path.validate_exists import ValidateExists
 
 
 class BaseProject(ABC):
 
     FILE_KEEP: Final[str] = ".gitkeep"
-    FILE_RESUME: Final[str] = "resumo.md"
+    FILE_RESUME: Final[str] = "project.file.resume"
 
-    FOLDER_META: Final[str] = "meta"
-    FOLDER_PARTED: Final[str] = "parte_"
-    FOLDER_CHAPTERED: Final[str] = "capitulos"
-    FOLDER_STANDALONE: Final[str] = "texto"
+    FOLDER_META: Final[str] = "project.folder.meta"
+    FOLDER_PARTED: Final[str] = "project.folder.parted"
+    FOLDER_CHAPTERED: Final[str] = "project.folder.chaptered"
+    FOLDER_STANDALONE: Final[str] = "project.folder.standalone"
+
+    def __init__(self, locale: Locales) -> None:
+        self._locale = locale
+        self._translation = TranslationFactory.get(locale)
 
     @classmethod
     def _create_folder(

@@ -24,10 +24,14 @@ class ProjectCreate(BaseProject):
         parts: int = 0,
     ) -> None:
         project = Project.empty()
+        project.locale = self._locale
+
         self.__handle_root(project=project, root=root)
         self.__handle_title_and_project_root(project=project, title=title)
         self.__handle_type_and_parts(
-            project=project, project_type=project_type, parts=parts
+            project=project,
+            project_type=project_type,
+            parts=parts,
         )
 
         self.__create_meta(project)
@@ -44,7 +48,10 @@ class ProjectCreate(BaseProject):
 
     @staticmethod
     def __handle_title_and_project_root(project: Project, title: str) -> None:
-        title = ValidateNotEmpty.validate(title, "The project title cannot be empty!")
+        title = ValidateNotEmpty.validate(
+            title,
+            "The project title cannot be empty!",
+        )
 
         slug = Slugifier.slugify(title)
 
@@ -72,13 +79,16 @@ class ProjectCreate(BaseProject):
         project.project_type = project_type
 
     def __create_meta(self, project: Project) -> None:
-        folder = project.root / self.FOLDER_META
+        folder_name = self._translation.translate(self.FOLDER_META)
+        folder = project.root / folder_name
+
         self._create_folder(folder)
 
         if project.project_type == ProjectType.STANDALONE:
             return
 
-        file_resume = folder / self.FILE_RESUME
+        filename = self._translation.translate(self.FILE_RESUME)
+        file_resume = folder / filename
 
         template = files("modules.templates").joinpath("resume.md_")
         content = template.read_text(encoding="utf-8")
@@ -89,7 +99,9 @@ class ProjectCreate(BaseProject):
         if project.project_type != ProjectType.STANDALONE:
             return
 
-        folder = project.root / self.FOLDER_STANDALONE
+        folder_name = self._translation.translate(self.FOLDER_STANDALONE)
+        folder = project.root / folder_name
+
         self._create_folder(folder, keep=False)
 
         slug = Slugifier.slugify(project.title)
@@ -107,7 +119,9 @@ class ProjectCreate(BaseProject):
         if project.project_type != ProjectType.CHAPTERED:
             return
 
-        folder = project.root / self.FOLDER_CHAPTERED
+        folder_name = self._translation.translate(self.FOLDER_CHAPTERED)
+        folder = project.root / folder_name
+
         self._create_folder(folder)
 
     def __create_parted(self, project: Project) -> None:
@@ -115,20 +129,25 @@ class ProjectCreate(BaseProject):
             return
 
         width = max(2, len(str(project.parts)))
+        folder_prefix = self._translation.translate(self.FOLDER_PARTED)
 
         for part in range(1, project.parts + 1):
-            folder = project.root / f"{self.FOLDER_PARTED}{part:0{width}d}"
+            folder = project.root / f"{folder_prefix}{part:0{width}d}"
 
             self._create_folder(folder, keep=False)
 
             template = files("modules.templates").joinpath("part.md_")
             content = template.read_text(encoding="utf-8")
 
-            number = str(num2words(part, lang="pt_PT")).capitalize()
+            number = str(num2words(part, lang=project.locale.value)).capitalize()
 
             content = content.replace("«number»", number)
 
-            filename = f"p{part:03d}_" f"i0000_" f"parte-{part:0{width}d}.rst"
+            filename = (
+                f"p{part:03d}_"
+                f"i0000_"
+                f"{folder_prefix.rstrip('_')}-{part:0{width}d}.rst"
+            )
 
             file = folder / filename
 

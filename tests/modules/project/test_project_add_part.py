@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from modules.enums.locales import Locales
 from modules.enums.project_type import ProjectType
 from modules.project.project_add_part import ProjectAddPart
 from modules.project.project_create import ProjectCreate
@@ -14,7 +15,7 @@ class TestProjectAddPart:
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp)
 
-            create = ProjectCreate()
+            create = ProjectCreate(Locales.PORTUGUESE_EUROPEAN)
             create.execute(
                 root=root,
                 title="Meu romance",
@@ -24,7 +25,7 @@ class TestProjectAddPart:
 
             project_root = root / "meu-romance"
 
-            service = ProjectAddPart()
+            service = ProjectAddPart(Locales.PORTUGUESE_EUROPEAN)
             service.execute(project_root)
 
             assert (project_root / "parte_04").exists()
@@ -36,7 +37,7 @@ class TestProjectAddPart:
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp)
 
-            create = ProjectCreate()
+            create = ProjectCreate(Locales.PORTUGUESE_EUROPEAN)
             create.execute(
                 root=root,
                 title="Meu romance",
@@ -45,7 +46,7 @@ class TestProjectAddPart:
 
             project_root = root / "meu-romance"
 
-            service = ProjectAddPart()
+            service = ProjectAddPart(Locales.PORTUGUESE_EUROPEAN)
 
             with pytest.raises(
                 ValueError,
@@ -57,7 +58,7 @@ class TestProjectAddPart:
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp)
 
-            create = ProjectCreate()
+            create = ProjectCreate(Locales.PORTUGUESE_EUROPEAN)
             create.execute(
                 root=root,
                 title="Meu romance",
@@ -67,7 +68,7 @@ class TestProjectAddPart:
 
             project_root = root / "meu-romance"
 
-            service = ProjectAddPart()
+            service = ProjectAddPart(Locales.PORTUGUESE_EUROPEAN)
             service.execute(project_root)
 
             assert (project_root / "parte_01").is_dir()
