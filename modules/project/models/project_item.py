@@ -19,7 +19,7 @@ class ProjectItem:
     EXTENSION: Final[str] = "md"
 
     @property
-    def name(self) -> str | None:
+    def name(self) -> str:
         parts = []
 
         if self.part is not None:
@@ -38,15 +38,15 @@ class ProjectItem:
             parts.append(self.slug)
 
         if not parts:
-            return None
+            raise ValueError("Project item has no name!")
 
         return "_".join(parts) + f".{self.extension}"
 
     @property
-    def path(self) -> Path | None:
+    def path(self) -> Path:
         name = self.name
         if name is None:
-            return None
+            raise ValueError("Project item has no name!")
 
         path = self.project.root
 
