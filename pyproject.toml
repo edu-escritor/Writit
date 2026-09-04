@@ -1,2 +1,9 @@
+[project]
+name = "writit"
+version = "0.1.0"
+
+[project.scripts]
+writit = "main:cli"
+
 [tool.black]
 line-length = 120

@@ -19,6 +19,9 @@ class Project:
     project_type: ProjectType
     parts: int
     locale: Locales = Locales.PORTUGUESE_EUROPEAN
+    author_name: str = "John Doe"
+    author_email: str = "john.doe@gmail.com"
+    author_cellphone: str = "+351 999 999 999"
     created_at: date = field(default_factory=date.today)
 
     def save(self) -> None:

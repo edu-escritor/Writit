@@ -1,6 +1,7 @@
 from importlib.resources import files
 from pathlib import Path
 
+from modules.project.base_project import BaseProject
 from modules.project.models.project import Project
 from modules.project.models.project_item import ProjectItem
 from naming.slugifier import Slugifier
@@ -11,9 +12,9 @@ from validators.path.validate_is_dir import ValidateIsDir
 from validators.path.validate_not_exists import ValidateNotExists
 
 
-class FileCreate:
+class FileCreate(BaseProject):
 
-    def execute(self, path: str | Path, title: str, part: int | None) -> None:
+    def execute(self, path: str | Path, title: str, part: int | None) -> str:
         project_item = self.__build_project_item(
             path=path,
             title=title,
@@ -31,6 +32,8 @@ class FileCreate:
             path=to_create,
             title=title,
         )
+
+        return f"The file {project_item.path} was successfully created!"
 
     @staticmethod
     def __build_project_item(

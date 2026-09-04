@@ -35,7 +35,7 @@ class TestParseNextIndex:
 
             index = ParseNextIndex.parse(project_item)
 
-            assert index == 40
+            assert index == 50
 
     def test_parse_next_index_empty_folder(self):
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
@@ -59,7 +59,7 @@ class TestParseNextIndex:
 
             index = ParseNextIndex.parse(project_item)
 
-            assert index == 0
+            assert index == 10
 
     def test_parse_next_index_ignores_files_without_index(self):
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
@@ -87,7 +87,7 @@ class TestParseNextIndex:
 
             index = ParseNextIndex.parse(project_item)
 
-            assert index == 10
+            assert index == 20
 
     def test_standalone_returns_none(self):
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:

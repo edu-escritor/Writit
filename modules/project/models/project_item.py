@@ -22,13 +22,9 @@ class ProjectItem:
     def name(self) -> str:
         parts = []
 
-        if self.part is not None:
-            part, padding = self.part
-            parts.append(f"p{part:0{padding}d}")
-
-        if self.index is not None:
-            index, padding = self.index
-            parts.append(f"i{index:0{padding}d}")
+        prefix = self.prefix
+        if "" != prefix:
+            parts.append(prefix)
 
         if self.version is not None:
             version, padding = self.version
@@ -54,3 +50,20 @@ class ProjectItem:
             path /= self.context
 
         return path / name
+
+    @property
+    def prefix(self) -> str:
+        parts = []
+
+        if self.part is not None:
+            part, padding = self.part
+            parts.append(f"p{part:0{padding}d}")
+
+        if self.index is not None:
+            index, padding = self.index
+            parts.append(f"i{index:0{padding}d}")
+
+        if not parts:
+            return ""
+
+        return "_".join(parts)

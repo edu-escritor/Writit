@@ -1,6 +1,7 @@
 import tempfile
 from pathlib import Path
 
+from modules.enums.locales import Locales
 from modules.enums.project_type import ProjectType
 from modules.file.file_create import FileCreate
 from modules.project.models.project import Project
@@ -23,7 +24,7 @@ class TestFileCreate:
             folder = root / "capitulos"
             folder.mkdir()
 
-            service = FileCreate()
+            service = FileCreate(Locales.PORTUGUESE_EUROPEAN)
 
             service.execute(
                 path=folder,
@@ -57,7 +58,7 @@ class TestFileCreate:
 
             (folder / "i0010_v001_primeiro-capitulo.md").touch()
 
-            service = FileCreate()
+            service = FileCreate(Locales.PORTUGUESE_EUROPEAN)
 
             service.execute(
                 path=folder,
@@ -81,7 +82,7 @@ class TestFileCreate:
             )
             project.save()
 
-            service = FileCreate()
+            service = FileCreate(Locales.PORTUGUESE_EUROPEAN)
 
             import pytest
 

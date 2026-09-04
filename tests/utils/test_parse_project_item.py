@@ -22,18 +22,20 @@ class TestParseItem:
             )
             project.save()
 
-            file = root / "qualquer.md"
+            folder = root / "texto"
+            folder.mkdir()
+
+            file = folder / "v004_meu-conto.md"
             file.touch()
 
-            item = ParseProjectItem.parse(
-                path=file,
-                title="Meu Conto",
-            )
+            item = ParseProjectItem.parse(file)
 
             assert item.project.root == root
             assert item.extension == "md"
             assert item.context == "texto"
             assert item.part is None
+            assert item.index is None
+            assert item.version == (4, 3)
             assert item.slug == "meu-conto"
 
     def test_chaptered(self):
@@ -51,21 +53,20 @@ class TestParseItem:
             folder = root / "capitulos"
             folder.mkdir()
 
-            file = folder / "i0010_v001_capitulo.md"
+            file = folder / "i0010_v001_primeiro-capitulo.md"
             file.touch()
 
-            item = ParseProjectItem.parse(
-                path=file,
-                title="Primeiro Capítulo",
-            )
+            item = ParseProjectItem.parse(file)
 
             assert item.project.root == root
             assert item.extension == "md"
             assert item.context == "capitulos"
             assert item.part is None
+            assert item.index == (10, 4)
+            assert item.version == (1, 3)
             assert item.slug == "primeiro-capitulo"
 
-    def test_parted_with_explicit_part(self):
+    def test_parted(self):
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp)
 
@@ -80,70 +81,45 @@ class TestParseItem:
             folder = root / "parte_02"
             folder.mkdir()
 
-            item = ParseProjectItem.parse(
-                path=folder,
-                title="Novo Capítulo",
-                part=2,
-            )
+            file = folder / "p002_i0010_v006_velho-novo-mundo.md"
+            file.touch()
+
+            item = ParseProjectItem.parse(file)
 
             assert item.project.root == root
             assert item.extension == "md"
-            assert item.part == (2, 1)
             assert item.context == "parte_02"
-            assert item.slug == "novo-capitulo"
-
-    def test_parted_parses_part_from_file(self):
-        with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
-            root = Path(temp)
-
-            project = Project(
-                title="Meu romance",
-                root=root,
-                project_type=ProjectType.PARTED,
-                parts=3,
-            )
-            project.save()
-
-            folder = root / "parte_01"
-            folder.mkdir()
-
-            file = folder / "p001_i0010_v006_velho-novo-mundo.md"
-            file.touch()
-
-            item = ParseProjectItem.parse(
-                path=file,
-                title="Velho Novo Mundo",
-            )
-
-            assert item.part == (1, 3)
-            assert item.context == "parte_01"
+            assert item.part == (2, 3)
+            assert item.index == (10, 4)
+            assert item.version == (6, 3)
             assert item.slug == "velho-novo-mundo"
 
-    def test_parted_without_part_raises_error(self):
+    def test_different_extension(self):
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp)
 
             project = Project(
                 title="Meu romance",
                 root=root,
-                project_type=ProjectType.PARTED,
-                parts=3,
+                project_type=ProjectType.CHAPTERED,
+                parts=0,
             )
             project.save()
 
-            file = root / "arquivo.md"
+            folder = root / "capitulos"
+            folder.mkdir()
+
+            file = folder / "i0020_v012_outro-capitulo.rst"
             file.touch()
 
-            with pytest.raises(
-                ValueError,
-                match="The project does not contain any part!",
-            ):
-                ParseProjectItem.parse(
-                    path=file,
-                    title="Arquivo",
-                )
+            item = ParseProjectItem.parse(file)
 
-    def test_empty_title_raises_error(self):
+            assert item.extension == "rst"
+            assert item.index == (20, 4)
+            assert item.version == (12, 3)
+            assert item.slug == "outro-capitulo"
+
+    def test_invalid_slug_without_separator(self):
         with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
             root = Path(temp)
 
@@ -155,11 +131,50 @@ class TestParseItem:
             )
             project.save()
 
-            file = root / "arquivo.md"
+            folder = root / "texto"
+            folder.mkdir()
+
+            file = folder / "v001.md"
             file.touch()
 
             with pytest.raises(ValueError):
-                ParseProjectItem.parse(
-                    path=file,
-                    title="",
-                )
+                ParseProjectItem.parse(file)
+
+    def test_invalid_empty_slug(self):
+        with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
+            root = Path(temp)
+
+            project = Project(
+                title="Meu conto",
+                root=root,
+                project_type=ProjectType.STANDALONE,
+                parts=0,
+            )
+            project.save()
+
+            folder = root / "texto"
+            folder.mkdir()
+
+            file = folder / "v001_.md"
+            file.touch()
+
+            with pytest.raises(ValueError):
+                ParseProjectItem.parse(file)
+
+    def test_directory_raises_error(self):
+        with tempfile.TemporaryDirectory(prefix="writit_test_") as temp:
+            root = Path(temp)
+
+            project = Project(
+                title="Meu romance",
+                root=root,
+                project_type=ProjectType.CHAPTERED,
+                parts=0,
+            )
+            project.save()
+
+            folder = root / "capitulos"
+            folder.mkdir()
+
+            with pytest.raises(ValueError):
+                ParseProjectItem.parse(folder)

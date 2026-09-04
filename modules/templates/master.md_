@@ -1,0 +1,14 @@
+# «title»
+
+::: {custom-style="authorInfo"}
+Autor: «autorName»
+
+Email: «autorEmail»
+
+Telemóvel: «autorCellPhone»
+
+Data: «date»
+
+Palavras: «words»
+:::
+

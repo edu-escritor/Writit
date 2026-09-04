@@ -28,4 +28,6 @@ class ParseNextIndex:
             value, _ = index
             max_index = max(max_index, value)
 
+        max_index = max_index + 10
+
         return max_index
