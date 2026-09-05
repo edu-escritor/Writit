@@ -38,7 +38,7 @@ class ProjectCreate(BaseProject):
         self.__create_standalone(project)
         self.__create_chaptered(project)
         self.__create_parted(project)
-        self.__create_master(project=project, title=title)
+        self._create_master(project=project)
 
         project.save()
 
@@ -151,16 +151,3 @@ class ProjectCreate(BaseProject):
             file = folder / filename
 
             self._create_file(file, content)
-
-    def __create_master(self, project: Project, title: str):
-        template = files("modules.templates").joinpath("master.md_")
-        content = template.read_text(encoding="utf-8")
-
-        content = content.replace("«title»", title)
-        content = content.replace("«autorName»", project.author_name)
-        content = content.replace("«autorEmail»", project.author_email)
-        content = content.replace("«autorCellPhone»", project.author_cellphone)
-        content = content.replace("«date»", project.created_at.strftime("%d-%m-%Y"))
-
-        file = project.root / "master.md"
-        self._create_file(file, content)

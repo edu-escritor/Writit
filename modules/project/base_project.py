@@ -1,10 +1,12 @@
 import re
 from abc import ABC
+from importlib.resources import files
 from pathlib import Path
 from shutil import copy2
 from typing import Final
 
 from modules.enums.locales import Locales
+from modules.project.models.project import Project
 from translations.translation_factory import TranslationFactory
 from validators.path.validate_exists import ValidateExists
 from validators.path.validate_not_exists import ValidateNotExists
@@ -77,3 +79,18 @@ class BaseProject(ABC):
             return
 
         raise ValueError("The file does not contain a Markdown header!")
+
+    def _create_master(self, project: Project, sync: bool = False) -> None:
+        file = project.root / "master.md"
+        file.unlink(missing_ok=True)
+
+        template = files("modules.templates").joinpath("master.md_")
+        content = template.read_text(encoding="utf-8")
+
+        content = content.replace("«title»", project.title)
+        content = content.replace("«autorName»", project.author_name)
+        content = content.replace("«autorEmail»", project.author_email)
+        content = content.replace("«autorCellPhone»", project.author_cellphone)
+        content = content.replace("«date»", project.created_at.strftime("%d-%m-%Y"))
+
+        self._create_file(file, content)
