@@ -1,6 +1,6 @@
 from modules.enums.project_type import ProjectType
 from modules.project.models.project_item import ProjectItem
-from utils.parse_index import ParseIndex
+from utils.parse.parse_index import ParseIndex
 
 
 class ParseNextIndex:

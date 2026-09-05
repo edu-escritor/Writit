@@ -7,14 +7,14 @@ from modules.enums.locales import Locales
 from modules.enums.project_type import ProjectType
 from modules.project.models.project import Project
 from modules.project.models.project_item import ProjectItem
-from tests.utils.file_title_handler import FileTitleHandler
+from tests.utils.parse.file_title_handler import FileTitleHandler
 from translations.base_translation import BaseTranslation
 from translations.translation_factory import TranslationFactory
-from utils.parse_index import ParseIndex
-from utils.parse_next_version import ParseNextVersion
-from utils.parse_project_item import ParseProjectItem
-from utils.parse_root import ParseRoot
-from utils.parse_version import ParseVersion
+from utils.parse.parse_index import ParseIndex
+from utils.parse.parse_next_version import ParseNextVersion
+from utils.parse.parse_project_item import ParseProjectItem
+from utils.parse.parse_root import ParseRoot
+from utils.parse.parse_version import ParseVersion
 from validators.path.validate_exists import ValidateExists
 
 
@@ -44,10 +44,17 @@ class MasterFileHandler:
         content = content.replace("«autorEmail»", self._project.author_email)
         content = content.replace("«autorCellPhone»", self._project.author_cellphone)
         self._content = content.replace("«date»", self.__today())
+
         self.__handle_standalone()
         self.__handle_chaptered()
 
-        self.__create_file(content)
+        for part in range(1, self._project.parts + 1):
+            self.__handle_parted(
+                part=part,
+                parts=self._project.parts,
+            )
+
+        self.__create_file(self._content)
 
     def __today(self) -> str:
         today = date.today()
@@ -67,29 +74,35 @@ class MasterFileHandler:
 
         ValidateExists.validate(self._master)
 
-    def __fetch_context(self) -> list[Path]:
-        folders: list[Path] = []
+    def __append_file(self, file: Path) -> None:
+        self._content += "\n\n" + FileTitleHandler.handle(file).strip()
 
-        folder = self._project.root
+    def __fetch_latest_by_index(
+        self,
+        folder: Path,
+    ) -> dict[int, Path]:
+        chapters: dict[int, tuple[int, Path]] = {}
 
-        match self._project.project_type:
-            case ProjectType.STANDALONE:
-                folders.append(folder / self._translation.translate("project.folder.standalone"))
+        for file in folder.iterdir():
+            if not file.is_file():
+                continue
 
-            case ProjectType.CHAPTERED:
-                folders.append(folder / self._translation.translate("project.folder.chaptered"))
+            index = ParseIndex().parse(file)
+            version = ParseVersion().parse(file)
 
-            case ProjectType.PARTED:
-                prefix = self._translation.translate("project.folder.parted")
+            if index is None or version is None:
+                continue
 
-                for part in range(1, self._project.parts + 1):
-                    folders.append(folder / f"{prefix}{part:02d}")
+            index_value = index[0]
+            version_value = version[0]
 
-        return folders
+            if index_value not in chapters or version_value > chapters[index_value][0]:
+                chapters[index_value] = (
+                    version_value,
+                    file,
+                )
 
-    def __sync_files(self, folders: list[Path]):
-        for folder in folders:
-            project_item = ProjectItem(project=self._project)
+        return {index: file for index, (_, file) in chapters.items()}
 
     def __handle_standalone(self) -> None:
         if self._project.project_type != ProjectType.STANDALONE:
@@ -114,7 +127,7 @@ class MasterFileHandler:
             current_version = ParseVersion().parse(file)
 
             if current_version is not None and current_version[0] == max_version:
-                self._content += "\n\n" + FileTitleHandler.handle(file).strip()
+                self.__append_file(file)
                 return
 
     def __handle_chaptered(self) -> None:
@@ -123,33 +136,16 @@ class MasterFileHandler:
 
         folder = self._project.root / self._translation.translate("project.folder.chaptered")
 
-        chapters: dict[int, tuple[int, Path]] = {}
-
-        for file in folder.iterdir():
-            if not file.is_file():
-                continue
-
-            index = ParseIndex().parse(file)
-            version = ParseVersion().parse(file)
-
-            if index is None or version is None:
-                continue
-
-            index_value = index[0]
-            version_value = version[0]
-
-            if index_value not in chapters or version_value > chapters[index_value][0]:
-                chapters[index_value] = (
-                    version_value,
-                    file,
-                )
+        chapters = self.__fetch_latest_by_index(folder)
 
         for index in sorted(chapters):
-            _, file = chapters[index]
+            self.__append_file(chapters[index])
 
-            self._content += "\n\n" + FileTitleHandler.handle(file).strip()
-
-    def __handle_parted(self, part: int | None, parts: int | None) -> None:
+    def __handle_parted(
+        self,
+        part: int | None,
+        parts: int | None,
+    ) -> None:
         if self._project.project_type != ProjectType.PARTED or part is None or parts is None:
             return
 
@@ -157,3 +153,13 @@ class MasterFileHandler:
         padding = max(2, len(str(parts)))
 
         folder = self._project.root / f"{prefix}{part:0{padding}d}"
+
+        part_file = folder / (f"p{part:03d}_i0000_" f"{prefix.rstrip('_')}-{part:0{padding}d}." + ProjectItem.EXTENSION)
+
+        if part_file.exists():
+            self.__append_file(part_file)
+
+        chapters = self.__fetch_latest_by_index(folder)
+
+        for index in sorted(chapters):
+            self.__append_file(chapters[index])

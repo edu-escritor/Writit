@@ -5,8 +5,8 @@ from modules.project.base_project import BaseProject
 from modules.project.models.project import Project
 from modules.project.models.project_item import ProjectItem
 from naming.slugifier import Slugifier
-from utils.parse_next_index import ParseNextIndex
-from utils.parse_root import ParseRoot
+from utils.parse.parse_next_index import ParseNextIndex
+from utils.parse.parse_root import ParseRoot
 from validators.path.validate_exists import ValidateExists
 from validators.path.validate_is_dir import ValidateIsDir
 from validators.path.validate_not_exists import ValidateNotExists

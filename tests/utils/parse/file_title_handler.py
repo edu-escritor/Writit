@@ -1,8 +1,8 @@
 import re
 from pathlib import Path
 
-from utils.parse_index import ParseIndex
-from utils.parse_part import ParsePart
+from utils.parse.parse_index import ParseIndex
+from utils.parse.parse_part import ParsePart
 from validators.path.validate_exists import ValidateExists
 from validators.path.validate_is_file import ValidateIsFile
 

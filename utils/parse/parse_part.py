@@ -3,7 +3,7 @@ from pathlib import Path
 
 from modules.enums.project_type import ProjectType
 from modules.project.models.project import Project
-from utils.parse_root import ParseRoot
+from utils.parse.parse_root import ParseRoot
 from validators.path.validate_exists import ValidateExists
 
 

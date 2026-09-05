@@ -1,5 +1,5 @@
 from modules.project.models.project_item import ProjectItem
-from utils.parse_version import ParseVersion
+from utils.parse.parse_version import ParseVersion
 
 
 class ParseNextVersion:

@@ -2,11 +2,11 @@ from pathlib import Path
 
 from modules.project.models.project import Project
 from modules.project.models.project_item import ProjectItem
-from utils.parse_index import ParseIndex
-from utils.parse_part import ParsePart
-from utils.parse_root import ParseRoot
-from utils.parse_slug import ParseSlug
-from utils.parse_version import ParseVersion
+from utils.parse.parse_index import ParseIndex
+from utils.parse.parse_part import ParsePart
+from utils.parse.parse_root import ParseRoot
+from utils.parse.parse_slug import ParseSlug
+from utils.parse.parse_version import ParseVersion
 from validators.path.validate_exists import ValidateExists
 from validators.path.validate_is_file import ValidateIsFile
 

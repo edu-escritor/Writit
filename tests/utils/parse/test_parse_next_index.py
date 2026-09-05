@@ -4,7 +4,7 @@ from pathlib import Path
 from modules.enums.project_type import ProjectType
 from modules.project.models.project import Project
 from modules.project.models.project_item import ProjectItem
-from utils.parse_next_index import ParseNextIndex
+from utils.parse.parse_next_index import ParseNextIndex
 
 
 class TestParseNextIndex:

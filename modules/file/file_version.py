@@ -5,8 +5,8 @@ from modules.enums.locales import Locales
 from modules.project.base_project import BaseProject
 from modules.project.models.project_item import ProjectItem
 from naming.slugifier import Slugifier
-from utils.parse_next_version import ParseNextVersion
-from utils.parse_project_item import ParseProjectItem
+from utils.parse.parse_next_version import ParseNextVersion
+from utils.parse.parse_project_item import ParseProjectItem
 from validators.path.validate_exists import ValidateExists
 from validators.path.validate_is_file import ValidateIsFile
 from validators.path.validate_not_exists import ValidateNotExists

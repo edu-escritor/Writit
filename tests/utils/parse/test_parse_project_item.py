@@ -5,7 +5,7 @@ import pytest
 
 from modules.enums.project_type import ProjectType
 from modules.project.models.project import Project
-from utils.parse_project_item import ParseProjectItem
+from utils.parse.parse_project_item import ParseProjectItem
 
 
 class TestParseItem:
