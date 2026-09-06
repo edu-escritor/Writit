@@ -7,6 +7,7 @@ from typing import ClassVar, Self
 
 from modules.enums.locales import Locales
 from modules.enums.project_type import ProjectType
+from naming.slugifier import Slugifier
 from validators.path.validate_is_file import ValidateIsFile
 
 
@@ -38,6 +39,10 @@ class Project:
 
         with path.open("w", encoding="utf-8") as file:
             json.dump(data, file, indent=4, ensure_ascii=False)
+
+    @property
+    def slug(self) -> str:
+        return Slugifier.slugify(self.title)
 
     @classmethod
     def load(cls, root: str | Path) -> Self:

@@ -146,7 +146,7 @@ class ProjectCreate(BaseProject):
 
             content = content.replace("«number»", number)
 
-            filename = f"p{part:03d}_" f"i0000_" f"{folder_prefix.rstrip('_')}-{part:0{width}d}.rst"
+            filename = f"p{part:03d}_" f"i0000_" f"{folder_prefix.rstrip('_')}-{part:0{width}d}.md"
 
             file = folder / filename
 

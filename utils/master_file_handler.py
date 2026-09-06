@@ -7,9 +7,9 @@ from modules.enums.locales import Locales
 from modules.enums.project_type import ProjectType
 from modules.project.models.project import Project
 from modules.project.models.project_item import ProjectItem
-from tests.utils.parse.file_title_handler import FileTitleHandler
 from translations.base_translation import BaseTranslation
 from translations.translation_factory import TranslationFactory
+from utils.file_title_handler import FileTitleHandler
 from utils.parse.parse_index import ParseIndex
 from utils.parse.parse_next_version import ParseNextVersion
 from utils.parse.parse_project_item import ParseProjectItem
@@ -33,17 +33,24 @@ class MasterFileHandler:
         self._translation: type[BaseTranslation] = TranslationFactory.get(locale)
         self._master: Path = self._project.root / self.MASTER
         self._content: str = ""
+        self._manuscript_content: str = ""
 
     def create(self, sync: bool = False) -> None:
-        # @todo: implement locale logic
         template = files("modules.templates").joinpath("master.md_")
         content = template.read_text(encoding="utf-8").strip()
 
         content = content.replace("«title»", self._project.title)
         content = content.replace("«autorName»", self._project.author_name)
         content = content.replace("«autorEmail»", self._project.author_email)
-        content = content.replace("«autorCellPhone»", self._project.author_cellphone)
-        self._content = content.replace("«date»", self.__today())
+        content = content.replace(
+            "«autorCellPhone»",
+            self._project.author_cellphone,
+        )
+
+        self._content = content.replace(
+            "«date»",
+            self.__today(),
+        )
 
         self.__handle_standalone()
         self.__handle_chaptered()
@@ -54,6 +61,8 @@ class MasterFileHandler:
                 parts=self._project.parts,
             )
 
+        self.__handle_word_count()
+
         self.__create_file(self._content)
 
     def __today(self) -> str:
@@ -62,20 +71,44 @@ class MasterFileHandler:
         date_format = self._translation.translate("date.long_format")
         month = self._translation.translate(f"date.month.{today.month:02d}")
 
-        date_format = date_format.replace("«day»", str(today.day))
-        date_format = date_format.replace("«month»", month)
-        date_format = date_format.replace("«year»", str(today.year))
+        date_format = date_format.replace(
+            "«day»",
+            str(today.day),
+        )
+        date_format = date_format.replace(
+            "«month»",
+            month,
+        )
+        date_format = date_format.replace(
+            "«year»",
+            str(today.year),
+        )
 
         return date_format
 
     def __create_file(self, content: str) -> None:
         self._master.unlink(missing_ok=True)
-        self._master.write_text(content, encoding="utf-8")
+        self._master.write_text(
+            content,
+            encoding="utf-8",
+        )
 
         ValidateExists.validate(self._master)
 
     def __append_file(self, file: Path) -> None:
-        self._content += "\n\n" + FileTitleHandler.handle(file).strip()
+        content = FileTitleHandler.handle(file).strip()
+
+        self._content += "\n\n" + content
+        self._manuscript_content += "\n\n" + content
+
+    def __handle_word_count(self) -> None:
+        words = len(self._manuscript_content.split())
+        formatted_words = f"{words:,}".replace(",", " ")
+
+        self._content = self._content.replace(
+            "«words»",
+            formatted_words,
+        )
 
     def __fetch_latest_by_index(
         self,
@@ -150,11 +183,16 @@ class MasterFileHandler:
             return
 
         prefix = self._translation.translate("project.folder.parted")
-        padding = max(2, len(str(parts)))
+        padding = max(
+            2,
+            len(str(parts)),
+        )
 
         folder = self._project.root / f"{prefix}{part:0{padding}d}"
 
-        part_file = folder / (f"p{part:03d}_i0000_" f"{prefix.rstrip('_')}-{part:0{padding}d}." + ProjectItem.EXTENSION)
+        part_file = folder / (
+            f"p{part:03d}_" f"i0000_" f"{prefix.rstrip('_')}-{part:0{padding}d}." + ProjectItem.EXTENSION
+        )
 
         if part_file.exists():
             self.__append_file(part_file)
